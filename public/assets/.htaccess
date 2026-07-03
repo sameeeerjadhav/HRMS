@@ -1,0 +1,21 @@
+# ============================================================
+#  assets/ — Static files only. Block all script execution.
+# ============================================================
+
+# Deny execution of PHP and other server-side scripts
+<FilesMatch "\.(php|php3|php4|php5|php7|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Only allow image, CSS, JS, font, and document files
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|pdf|map)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Deny everything else by default
+<FilesMatch "^(?!.*\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|pdf|map)$)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
