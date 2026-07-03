@@ -432,8 +432,26 @@ export default function FnfClientComponent({
 
       {initialSettlements.length > 0 && (
         <div className="table-wrap">
-          <div className="table-toolbar">
+          <div className="table-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2>Settlements ({initialSettlements.length})</h2>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                import("@/lib/exportUtils").then(({ downloadCSV }) => {
+                  const data = initialSettlements.map((s) => ({
+                    Employee: s.emp_name,
+                    Code: s.emp_code,
+                    LWD: s.last_working_day,
+                    Earnings: s.total_earnings,
+                    Deductions: s.total_deductions,
+                    Net_Settlement: s.net_settlement,
+                  }));
+                  downloadCSV(data, "fnf_settlements.csv");
+                });
+              }}
+            >
+              Export to CSV
+            </button>
           </div>
           <table>
             <thead>
