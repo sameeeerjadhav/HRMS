@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import DeleteModal from "./DeleteModal";
 import { deleteEmployee } from "@/app/actions/adminActions";
+import { downloadCSV } from "@/lib/exportUtils";
 
 type Employee = {
   id: number;
@@ -101,7 +102,7 @@ export default function EmployeesClientComponent({
               >
                 Deselect All
               </button>
-              <button className="btn btn-sm" style={{ background: "#16a34a", color: "#fff" }}>
+              <button className="btn btn-sm" style={{ background: "#16a34a", color: "#fff" }} onClick={() => downloadCSV(filteredEmployees.filter(e => selectedIds.has(e.id)), "employees_selected.csv")}>
                 <svg
                   viewBox="0 0 24 24"
                   width="13"
@@ -190,7 +191,7 @@ export default function EmployeesClientComponent({
                 Clear
               </button>
             )}
-            <button className="btn btn-secondary btn-sm">
+            <button className="btn btn-secondary btn-sm" onClick={() => downloadCSV(filteredEmployees, "employees.csv")}>
               <svg
                 viewBox="0 0 24 24"
                 width="13"
@@ -280,7 +281,7 @@ export default function EmployeesClientComponent({
                   <td className="text-muted text-sm">{emp.joined}</td>
                   <td>
                     <div style={{ display: "flex", gap: "6px" }}>
-                      <Link href={`/admin/edit_employee?id=${emp.id}`} className="btn btn-ghost btn-sm">
+                      <Link href={`/admin/edit_employee/${emp.id}`} className="btn btn-ghost btn-sm">
                         <svg
                           viewBox="0 0 24 24"
                           width="13"

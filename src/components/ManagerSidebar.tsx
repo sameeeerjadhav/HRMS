@@ -74,6 +74,41 @@ export default function ManagerSidebar() {
       </div>
 
       <div className="sidebar-section">
+        <div className="sidebar-section-label">Self Service</div>
+        <nav className="sidebar-nav">
+          <Link href="/manager/profile" className={p === "/manager/profile" ? "active" : ""}>
+            <svg viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            My Profile
+          </Link>
+          <Link href="/manager/my_leaves" className={p === "/manager/my_leaves" ? "active" : ""}>
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            My Leaves
+          </Link>
+          <Link href="/manager/my_regularizations" className={p === "/manager/my_regularizations" ? "active" : ""}>
+            <svg viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            My Regularizations
+          </Link>
+          <Link href="/manager/payslip" className={p === "/manager/payslip" ? "active" : ""}>
+            <svg viewBox="0 0 24 24">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+            My Payslips
+          </Link>
+        </nav>
+      </div>
+
+      <div className="sidebar-section">
         <div className="sidebar-section-label">Team</div>
         <nav className="sidebar-nav">
           <Link href="/manager/team" className={p === "/manager/team" ? "active" : ""}>
@@ -99,7 +134,7 @@ export default function ManagerSidebar() {
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
-            Regularizations
+            Team Regularizations
           </Link>
           <Link href="/manager/acl_requests" className={p === "/manager/acl_requests" ? "active" : ""}>
             <svg viewBox="0 0 24 24">

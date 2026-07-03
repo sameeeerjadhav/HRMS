@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { saveLeaveType, toggleLeaveType } from "@/app/actions/leaveActions";
+import { downloadCSV } from "@/lib/exportUtils";
 
 type LeaveType = {
   id: number;
@@ -76,14 +77,35 @@ export default function LeavesClientComponent({
     setMcSelected(newSel);
   };
 
+  const handleExportTypes = () => {
+    const data = leaveTypes.map(lt => {
+      const bs = initialBalSummary[lt.id] || { total_bal: 0, total_used: 0 };
+      return {
+        Type: lt.name,
+        Credit_Days: lt.days_per_credit,
+        Cycle: lt.credit_cycle,
+        Carry_Forward: lt.max_carry_fwd,
+        Total_Balance: bs.total_bal.toFixed(1),
+        Total_Used: bs.total_used.toFixed(1),
+        Status: lt.is_active ? "Active" : "Inactive"
+      };
+    });
+    downloadCSV(data, "leave_types.csv");
+  };
+
   return (
     <>
       <div className="table-wrap" style={{ marginBottom: "24px" }}>
-        <div className="table-toolbar">
+        <div className="table-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2>Leave Types</h2>
-          <button className="btn btn-primary btn-sm" onClick={() => setIsAddModalOpen(true)}>
-            + Add Leave Type
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button className="btn btn-secondary btn-sm" onClick={handleExportTypes}>
+              Export to CSV
+            </button>
+            <button className="btn btn-primary btn-sm" onClick={() => setIsAddModalOpen(true)}>
+              + Add Leave Type
+            </button>
+          </div>
         </div>
         <table>
           <thead>

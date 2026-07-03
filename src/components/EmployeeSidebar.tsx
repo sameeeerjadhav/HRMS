@@ -62,6 +62,14 @@ export default function EmployeeSidebar() {
             </svg>
             My Tasks
           </Link>
+          <Link href="/employee/gantt" className={p === "/employee/gantt" ? "active" : ""}>
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="4" rx="1" />
+              <rect x="6" y="10" width="12" height="4" rx="1" />
+              <rect x="9" y="16" width="9" height="4" rx="1" />
+            </svg>
+            My Gantt Chart
+          </Link>
           <Link href="/employee/attendance" className={p === "/employee/attendance" ? "active" : ""}>
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" />

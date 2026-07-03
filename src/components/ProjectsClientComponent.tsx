@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import DeleteModal from "./DeleteModal";
 import { deleteProject } from "@/app/actions/projectActions";
+import { downloadCSV } from "@/lib/exportUtils";
 
 type Project = {
   id: number;
@@ -104,13 +105,18 @@ export default function ProjectsClientComponent({
 
       {/* Table */}
       <div className="table-wrap">
-        <div className="table-toolbar">
+        <div className="table-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2>
             Projects{" "}
             <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "13px" }}>
               ({filteredProjects.length})
             </span>
           </h2>
+          <div>
+            <button className="btn btn-secondary btn-sm" onClick={() => downloadCSV(filteredProjects, "projects.csv")}>
+              Export to CSV
+            </button>
+          </div>
         </div>
         <table>
           <thead>
