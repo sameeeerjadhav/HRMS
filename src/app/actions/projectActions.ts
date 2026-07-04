@@ -10,7 +10,7 @@ export async function saveProject(data: FormData) {
     const project_name = data.get("project_name") as string;
     const client_name = data.get("client_name") as string;
     const priority = data.get("priority") as "High" | "Medium" | "Low";
-    const status = data.get("status") as "Planning" | "Active" | "On_Hold" | "Completed" | "Cancelled";
+    const status = (data.get("status") || "Planning") as "Planning" | "Active" | "On_Hold" | "Completed" | "Cancelled";
     const manager_id = data.get("manager_id") ? Number(data.get("manager_id")) : null;
     const start_date = new Date(data.get("start_date") as string);
     const deadline_date = new Date(data.get("deadline_date") as string);

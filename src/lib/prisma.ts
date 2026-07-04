@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
-  adapter: PrismaMariaDb | undefined
+  adapter: PrismaPg | undefined
 }
 
-const adapter = globalForPrisma.adapter ?? new PrismaMariaDb({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'u587292075_portal',
-  connectionLimit: 10
-});
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:Sameer%4030020101@localhost:5432/hrms_portal';
+
+const pool = new Pool({ connectionString });
+const adapter = globalForPrisma.adapter ?? new PrismaPg(pool);
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.adapter = adapter;
 

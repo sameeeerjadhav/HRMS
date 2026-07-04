@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export default async function EditEmployeePage({ params }: { params: { id: string } }) {
+export default async function EditEmployeePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getUser();
   if (!user || user.role !== "admin") return null;
 
@@ -20,7 +21,7 @@ export default async function EditEmployeePage({ params }: { params: { id: strin
   }
 
   const employee_documents = await prisma.$queryRawUnsafe(
-    `SELECT * FROM employee_documents WHERE employee_id = ?`,
+    `SELECT * FROM employee_documents WHERE employee_id = $1`,
     employeeId
   );
 

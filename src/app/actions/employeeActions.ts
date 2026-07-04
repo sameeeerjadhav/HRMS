@@ -98,7 +98,7 @@ export async function uploadEmployeeDocument(employeeId: number, documentType: s
     await prisma.$executeRawUnsafe(
       `INSERT INTO employee_documents 
        (employee_id, doc_type, doc_key, file_path, original_name, mime_type, file_size) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       employeeId, documentType, docKey, relPath, file.name, file.type, file.size
     );
 
@@ -113,7 +113,7 @@ export async function uploadEmployeeDocument(employeeId: number, documentType: s
 export async function deleteEmployeeDocument(documentId: number, employeeId: number) {
   try {
     const docs: any[] = await prisma.$queryRawUnsafe(
-      `SELECT file_path FROM employee_documents WHERE id = ?`,
+      `SELECT file_path FROM employee_documents WHERE id = $1`,
       documentId
     );
     if (docs && docs.length > 0) {
@@ -124,7 +124,7 @@ export async function deleteEmployeeDocument(documentId: number, employeeId: num
         console.error("File not found on disk, continuing deletion from DB");
       }
       await prisma.$executeRawUnsafe(
-        `DELETE FROM employee_documents WHERE id = ?`,
+        `DELETE FROM employee_documents WHERE id = $1`,
         documentId
       );
     }

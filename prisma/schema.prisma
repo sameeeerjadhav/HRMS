@@ -4,532 +4,552 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model acl_requests {
-  id          Int                 @id @default(autoincrement()) @db.UnsignedInt
-  user_id     Int                 @db.UnsignedInt
-  work_date   DateTime            @db.Date
-  reason      String              @db.VarChar(255)
-  hours       Decimal             @default(9.00) @db.Decimal(5, 2)
+  id          Int @id @default(autoincrement()) 
+  user_id     Int
+  work_date   DateTime
+  reason      String
+  hours       Decimal @default(9.00) 
   status      acl_requests_status @default(pending)
-  reviewed_by Int?                @db.UnsignedInt
-  reviewed_at DateTime?           @db.DateTime(0)
-  review_note String?             @db.VarChar(255)
-  created_at  DateTime            @default(now()) @db.Timestamp(0)
+  reviewed_by Int?
+  reviewed_at DateTime?
+  review_note String?
+  created_at  DateTime @default(now())
+  @@index([work_date])
 
-  @@index([work_date], map: "idx_acl_date")
-  @@index([status], map: "idx_acl_status")
-  @@index([user_id], map: "idx_acl_user")
+  @@index([status])
+
+  @@index([user_id])
 }
 
 model app_settings {
-  id            Int      @id @default(autoincrement()) @db.UnsignedInt
-  setting_key   String   @unique(map: "uq_key") @db.VarChar(100)
-  setting_value String?  @db.Text
-  updated_at    DateTime @default(now()) @db.Timestamp(0)
+  id            Int @id @default(autoincrement()) 
+  setting_key   String @unique() 
+  setting_value String?
+  updated_at    DateTime @default(now()) 
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model attendance_locations {
-  id              Int               @id @default(autoincrement()) @db.UnsignedInt
-  name            String            @db.VarChar(120)
-  address         String?           @db.VarChar(255)
-  latitude        Decimal           @db.Decimal(10, 7)
-  longitude       Decimal           @db.Decimal(10, 7)
-  radius_m        Int               @default(200) @db.UnsignedInt
-  is_remote       Boolean           @default(false)
-  is_active       Boolean           @default(true)
-  created_at      DateTime          @default(now()) @db.Timestamp(0)
+  id              Int @id @default(autoincrement()) 
+  name            String
+  address         String?
+  latitude        Decimal
+  longitude       Decimal
+  radius_m        Int @default(200) 
+  is_remote       Boolean @default(false)
+  is_active       Boolean @default(true)
+  created_at      DateTime @default(now()) 
   attendance_logs attendance_logs[]
   user_locations  user_locations[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model attendance_logs {
-  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt
-  user_id              Int                    @db.UnsignedInt
-  log_date             DateTime               @db.Date
-  clock_in             DateTime?              @db.DateTime(0)
-  clock_out            DateTime?              @db.DateTime(0)
-  work_seconds         Int?                   @db.UnsignedInt
-  ot_hours             Decimal                @default(0.00) @db.Decimal(5, 2)
+  id                   Int @id @default(autoincrement()) 
+  user_id              Int
+  log_date             DateTime
+  clock_in             DateTime?
+  clock_out            DateTime?
+  work_seconds         Int?
+  ot_hours             Decimal @default(0.00) 
   status               attendance_logs_status @default(present)
-  location_id          Int?                   @db.UnsignedInt
-  clock_in_lat         Decimal?               @db.Decimal(10, 7)
-  clock_in_lng         Decimal?               @db.Decimal(10, 7)
-  clock_out_lat        Decimal?               @db.Decimal(10, 7)
-  clock_out_lng        Decimal?               @db.Decimal(10, 7)
-  note                 String?                @db.VarChar(255)
-  created_at           DateTime               @default(now()) @db.Timestamp(0)
-  updated_at           DateTime               @default(now()) @db.Timestamp(0)
-  attendance_locations attendance_locations?  @relation(fields: [location_id], references: [id], onUpdate: Restrict, map: "fk_att_location")
-  users                users                  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_att_user")
+  location_id          Int?
+  clock_in_lat         Decimal?
+  clock_in_lng         Decimal?
+  clock_out_lat        Decimal?
+  clock_out_lng        Decimal?
+  note                 String?
+  created_at           DateTime @default(now()) 
+  updated_at           DateTime @default(now()) 
+  attendance_locations attendance_locations? @relation(fields: [location_id], references: [id], onUpdate: Restrict)
+  users                users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([user_id, log_date], map: "uq_user_date")
-  @@index([location_id], map: "fk_att_location")
-  @@index([log_date], map: "idx_log_date")
-  @@index([user_id], map: "idx_user_id")
+
+  @@unique([user_id, log_date])
+
+  @@index([location_id])
+
+  @@index([log_date])
+
+  @@index([user_id])
 }
 
 model attendance_regularizations {
-  id            Int                               @id @default(autoincrement()) @db.UnsignedInt
-  user_id       Int                               @db.UnsignedInt
-  log_date      DateTime                          @db.Date
-  req_clock_in  DateTime                          @db.Time(0)
-  req_clock_out DateTime                          @db.Time(0)
-  reason        String                            @db.VarChar(255)
+  id            Int @id @default(autoincrement()) 
+  user_id       Int
+  log_date      DateTime
+  req_clock_in  DateTime
+  req_clock_out DateTime
+  reason        String
   status        attendance_regularizations_status @default(pending)
-  reviewed_by   Int?                              @db.UnsignedInt
-  reviewed_at   DateTime?                         @db.DateTime(0)
-  review_note   String?                           @db.VarChar(255)
-  escalated     Boolean                           @default(false)
-  escalated_at  DateTime?                         @db.DateTime(0)
-  created_at    DateTime                          @default(now()) @db.Timestamp(0)
-  users         users                             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_reg_user")
+  reviewed_by   Int?
+  reviewed_at   DateTime?
+  review_note   String?
+  escalated     Boolean @default(false)
+  escalated_at  DateTime?
+  created_at    DateTime @default(now()) 
+  users         users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@index([status], map: "idx_reg_status")
-  @@index([user_id], map: "idx_reg_user")
+
+  @@index([status])
+
+  @@index([user_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model audit_log {
-  id          Int      @id @default(autoincrement()) @db.UnsignedInt
-  user_id     Int?     @db.UnsignedInt
-  action      String   @db.VarChar(100)
-  entity_type String?  @db.VarChar(60)
-  entity_id   Int?     @db.UnsignedInt
-  ip_address  String?  @db.VarChar(45)
-  user_agent  String?  @db.VarChar(255)
-  details     String?  @db.LongText
-  created_at  DateTime @default(now()) @db.Timestamp(0)
+  id          Int @id @default(autoincrement()) 
+  user_id     Int?
+  action      String
+  entity_type String?
+  entity_id   Int?
+  ip_address  String?
+  user_agent  String?
+  details     String?
+  created_at  DateTime @default(now())
+  @@index([action])
 
-  @@index([action], map: "idx_audit_action")
-  @@index([entity_type, entity_id], map: "idx_audit_entity")
-  @@index([created_at], map: "idx_audit_time")
-  @@index([user_id], map: "idx_audit_user")
+  @@index([entity_type, entity_id])
+
+  @@index([created_at])
+
+  @@index([user_id])
 }
 
 model custom_field_meta {
-  id            Int      @id @default(autoincrement())
-  field_name    String   @unique(map: "field_name") @db.VarChar(100)
-  field_type    String   @default("text") @db.VarChar(30)
-  field_label   String   @db.VarChar(200)
-  field_options String?  @db.Text
+  id            Int @id @default(autoincrement())
+  field_name    String @unique() 
+  field_type    String @default("text") 
+  field_label   String
+  field_options String?
   is_required   Boolean? @default(false)
 }
 
 model departments {
-  id         Int      @id @default(autoincrement()) @db.UnsignedInt
-  name       String   @unique(map: "uq_dept_name") @db.VarChar(100)
-  created_at DateTime @default(now()) @db.Timestamp(0)
+  id         Int @id @default(autoincrement()) 
+  name       String @unique() 
+  created_at DateTime @default(now()) 
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model employees {
-  id                      Int                       @id @default(autoincrement())
-  first_name              String                    @db.VarChar(100)
-  last_name               String                    @db.VarChar(100)
-  email                   String                    @unique(map: "uq_emp_email") @db.VarChar(255)
-  phone                   String?                   @db.VarChar(20)
-  job_title               String?                   @db.VarChar(100)
-  date_of_birth           DateTime?                 @db.Date
+  id                      Int @id @default(autoincrement())
+  first_name              String
+  last_name               String
+  email                   String @unique() 
+  phone                   String?
+  job_title               String?
+  date_of_birth           DateTime?
   gender                  employees_gender?
   marital_status          employees_marital_status?
-  employee_id             String?                   @db.VarChar(50)
-  department_id           Int?                      @db.UnsignedInt
-  employee_type           employees_employee_type   @default(FTE)
-  date_of_joining         DateTime?                 @db.Date
-  date_of_exit            DateTime?                 @db.Date
-  date_of_confirmation    DateTime?                 @db.Date
-  direct_manager_name     String?                   @db.VarChar(150)
-  location                String?                   @db.VarChar(150)
-  base_location           String?                   @db.VarChar(150)
-  user_code               String?                   @db.VarChar(50)
-  address_line1           String?                   @db.VarChar(255)
-  address_line2           String?                   @db.VarChar(255)
-  city                    String?                   @db.VarChar(100)
-  state                   String?                   @db.VarChar(100)
-  zip_code                String?                   @db.VarChar(20)
-  country                 String?                   @db.VarChar(100)
-  permanent_address_line1 String?                   @db.VarChar(255)
-  permanent_address_line2 String?                   @db.VarChar(255)
-  permanent_city          String?                   @db.VarChar(100)
-  permanent_state         String?                   @db.VarChar(100)
-  permanent_zip_code      String?                   @db.VarChar(20)
+  employee_id             String?
+  department_id           Int?
+  employee_type           employees_employee_type @default(FTE)
+  date_of_joining         DateTime?
+  date_of_exit            DateTime?
+  date_of_confirmation    DateTime?
+  direct_manager_name     String?
+  location                String?
+  base_location           String?
+  user_code               String?
+  address_line1           String?
+  address_line2           String?
+  city                    String?
+  state                   String?
+  zip_code                String?
+  country                 String?
+  permanent_address_line1 String?
+  permanent_address_line2 String?
+  permanent_city          String?
+  permanent_state         String?
+  permanent_zip_code      String?
   account_type            employees_account_type?
-  account_number          String?                   @db.VarChar(50)
-  ifsc_code               String?                   @db.VarChar(20)
-  pan                     String?                   @db.VarChar(20)
-  aadhar_no               String?                   @db.VarChar(20)
-  uan_number              String?                   @db.VarChar(20)
-  pf_account_number       String?                   @db.VarChar(50)
-  employee_provident_fund String?                   @db.VarChar(50)
-  professional_tax        String?                   @db.VarChar(50)
-  esi_number              String?                   @db.VarChar(50)
-  exempt_from_tax         Boolean?                  @default(false)
-  passport_no             String?                   @db.VarChar(30)
-  place_of_issue          String?                   @db.VarChar(100)
-  passport_date_of_issue  DateTime?                 @db.Date
-  passport_date_of_expiry DateTime?                 @db.Date
-  place_of_birth          String?                   @db.VarChar(100)
-  nationality             String?                   @db.VarChar(100)
-  blood_group             String?                   @db.VarChar(10)
-  personal_email          String?                   @unique(map: "uq_emp_personal_email") @db.VarChar(255)
-  photo                   String?                   @db.VarChar(255)
-  emergency_contact_no    String?                   @db.VarChar(20)
-  country_code_phone      String?                   @db.VarChar(10)
-  status                  employees_status?         @default(Active)
-  created_at              DateTime                  @default(now()) @db.Timestamp(0)
-  gross_salary            Decimal                   @default(0.00) @db.Decimal(12, 2)
-  acl_eligible            Boolean                   @default(true)
-  indian                  String?                   @db.VarChar(255)
-
-  @@index([department_id], map: "idx_department_id")
+  account_number          String?
+  ifsc_code               String?
+  pan                     String?
+  aadhar_no               String?
+  uan_number              String?
+  pf_account_number       String?
+  employee_provident_fund String?
+  professional_tax        String?
+  esi_number              String?
+  exempt_from_tax         Boolean? @default(false)
+  passport_no             String?
+  place_of_issue          String?
+  passport_date_of_issue  DateTime?
+  passport_date_of_expiry DateTime?
+  place_of_birth          String?
+  nationality             String?
+  blood_group             String?
+  personal_email          String? @unique() 
+  photo                   String?
+  emergency_contact_no    String?
+  country_code_phone      String?
+  status                  employees_status? @default(Active)
+  created_at              DateTime @default(now()) 
+  gross_salary            Decimal @default(0.00) 
+  acl_eligible            Boolean @default(true)
+  indian                  String?
+  custom_fields           Json? @default("{}")
+  @@index([department_id])
 }
 
 model fnf_settlements {
-  id                         Int      @id @default(autoincrement()) @db.UnsignedInt
-  user_id                    Int      @db.UnsignedInt
-  last_working_day           DateTime @db.Date
-  days_worked                Int      @default(0)
-  working_days_month         Int      @default(0)
-  pl_days                    Decimal  @default(0.0) @db.Decimal(5, 1)
-  pl_encashment              Decimal  @default(0.00) @db.Decimal(12, 2)
-  bonus                      Decimal  @default(0.00) @db.Decimal(12, 2)
-  notice_period              Int      @default(90)
-  notice_served              Int      @default(0)
-  notice_shortfall_deduction Decimal  @default(0.00) @db.Decimal(12, 2)
-  outstanding_recovery       Decimal  @default(0.00) @db.Decimal(12, 2)
-  custom_items               String?  @db.LongText
-  total_earnings             Decimal  @default(0.00) @db.Decimal(12, 2)
-  total_deductions           Decimal  @default(0.00) @db.Decimal(12, 2)
-  net_settlement             Decimal  @default(0.00) @db.Decimal(12, 2)
-  created_at                 DateTime @default(now()) @db.Timestamp(0)
-
-  @@index([user_id], map: "user_id")
+  id                         Int @id @default(autoincrement()) 
+  user_id                    Int
+  last_working_day           DateTime 
+  days_worked                Int @default(0)
+  working_days_month         Int @default(0)
+  pl_days                    Decimal @default(0.0) 
+  pl_encashment              Decimal @default(0.00) 
+  bonus                      Decimal @default(0.00) 
+  notice_period              Int @default(90)
+  notice_served              Int @default(0)
+  notice_shortfall_deduction Decimal @default(0.00) 
+  outstanding_recovery       Decimal @default(0.00) 
+  custom_items               String?
+  total_earnings             Decimal @default(0.00) 
+  total_deductions           Decimal @default(0.00) 
+  net_settlement             Decimal @default(0.00) 
+  created_at                 DateTime @default(now())
+  @@index([user_id])
 }
 
 model holidays {
-  id           Int      @id @default(autoincrement()) @db.UnsignedInt
-  title        String   @db.VarChar(150)
-  holiday_date DateTime @unique(map: "uq_holiday_date") @db.Date
-  description  String?  @db.VarChar(255)
-  recurring    Boolean  @default(false)
-  created_at   DateTime @default(now()) @db.Timestamp(0)
+  id           Int @id @default(autoincrement()) 
+  title        String
+  holiday_date DateTime @unique() 
+  description  String?
+  recurring    Boolean @default(false)
+  created_at   DateTime @default(now()) 
 }
 
 model leave_applications {
-  id            Int                       @id @default(autoincrement()) @db.UnsignedInt
-  user_id       Int                       @db.UnsignedInt
-  leave_type_id Int                       @db.UnsignedInt
-  from_date     DateTime                  @db.Date
-  to_date       DateTime                  @db.Date
-  days          Decimal                   @db.Decimal(5, 1)
-  reason        String?                   @db.Text
+  id            Int @id @default(autoincrement()) 
+  user_id       Int
+  leave_type_id Int
+  from_date     DateTime
+  to_date       DateTime
+  days          Decimal
+  reason        String?
   status        leave_applications_status @default(pending)
-  reviewed_by   Int?                      @db.UnsignedInt
-  reviewed_at   DateTime?                 @db.DateTime(0)
-  review_note   String?                   @db.VarChar(255)
-  created_at    DateTime                  @default(now()) @db.Timestamp(0)
-  escalated     Boolean                   @default(false)
-  escalated_at  DateTime?                 @db.DateTime(0)
-  leave_types   leave_types               @relation(fields: [leave_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_la_type")
-  users         users                     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_la_user")
+  reviewed_by   Int?
+  reviewed_at   DateTime?
+  review_note   String?
+  created_at    DateTime @default(now()) 
+  escalated     Boolean @default(false)
+  escalated_at  DateTime?
+  leave_types   leave_types @relation(fields: [leave_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users         users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@index([leave_type_id], map: "fk_la_type")
-  @@index([status], map: "idx_la_status")
-  @@index([user_id], map: "idx_la_user")
+
+  @@index([leave_type_id])
+
+  @@index([status])
+
+  @@index([user_id])
 }
 
 model leave_balances {
-  id            Int         @id @default(autoincrement()) @db.UnsignedInt
-  user_id       Int         @db.UnsignedInt
-  leave_type_id Int         @db.UnsignedInt
-  balance       Decimal     @default(0.0) @db.Decimal(5, 1)
-  used          Decimal     @default(0.0) @db.Decimal(5, 1)
-  updated_at    DateTime    @default(now()) @db.Timestamp(0)
-  leave_types   leave_types @relation(fields: [leave_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_lb_type")
-  users         users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_lb_user")
+  id            Int @id @default(autoincrement()) 
+  user_id       Int
+  leave_type_id Int
+  balance       Decimal @default(0.0) 
+  used          Decimal @default(0.0) 
+  updated_at    DateTime @default(now()) 
+  leave_types   leave_types @relation(fields: [leave_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users         users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([user_id, leave_type_id], map: "uq_user_type")
-  @@index([leave_type_id], map: "fk_lb_type")
+
+  @@unique([user_id, leave_type_id])
+
+  @@index([leave_type_id])
 }
 
 model leave_credit_log {
-  id            Int      @id @default(autoincrement()) @db.UnsignedInt
-  user_id       Int      @db.UnsignedInt
-  leave_type_id Int      @db.UnsignedInt
-  days          Decimal  @db.Decimal(5, 1)
-  reason        String?  @db.VarChar(255)
-  credited_by   Int?     @db.UnsignedInt
-  created_at    DateTime @default(now()) @db.Timestamp(0)
-
-  @@index([user_id], map: "idx_lcl_user")
+  id            Int @id @default(autoincrement()) 
+  user_id       Int
+  leave_type_id Int
+  days          Decimal
+  reason        String?
+  credited_by   Int?
+  created_at    DateTime @default(now())
+  @@index([user_id])
 }
 
 model leave_types {
-  id                 Int                      @id @default(autoincrement()) @db.UnsignedInt
-  name               String                   @db.VarChar(100)
-  days_per_credit    Decimal                  @default(1.0) @db.Decimal(5, 1)
+  id                 Int @id @default(autoincrement()) 
+  name               String
+  days_per_credit    Decimal @default(1.0) 
   credit_cycle       leave_types_credit_cycle @default(monthly)
-  credit_day         Int                      @default(1) @db.TinyInt
-  max_carry_fwd      Decimal                  @default(0.0) @db.Decimal(5, 1)
-  is_active          Boolean                  @default(true)
-  color              String                   @default("#4f46e5") @db.VarChar(7)
-  created_at         DateTime                 @default(now()) @db.Timestamp(0)
+  credit_day         Int @default(1) 
+  max_carry_fwd      Decimal @default(0.0) 
+  is_active          Boolean @default(true)
+  color              String @default("#4f46e5") 
+  created_at         DateTime @default(now()) 
   leave_applications leave_applications[]
   leave_balances     leave_balances[]
 }
 
 model login_attempts {
-  id           Int       @id @default(autoincrement()) @db.UnsignedInt
-  email        String    @db.VarChar(255)
-  ip_address   String    @db.VarChar(45)
-  attempted_at DateTime  @default(now()) @db.DateTime(0)
-  locked_until DateTime? @db.DateTime(0)
+  id           Int @id @default(autoincrement()) 
+  email        String
+  ip_address   String
+  attempted_at DateTime @default(now()) 
+  locked_until DateTime?
+  @@index([email])
 
-  @@index([email], map: "idx_la_email")
-  @@index([ip_address], map: "idx_la_ip")
-  @@index([attempted_at], map: "idx_la_time")
+  @@index([ip_address])
+
+  @@index([attempted_at])
 }
 
 model password_resets {
-  id         Int      @id @default(autoincrement()) @db.UnsignedInt
-  email      String   @db.VarChar(255)
-  token_hash String   @db.VarChar(255)
-  expires_at DateTime @db.DateTime(0)
-  used       Boolean  @default(false)
-  created_at DateTime @default(now()) @db.Timestamp(0)
+  id         Int @id @default(autoincrement()) 
+  email      String
+  token_hash String
+  expires_at DateTime 
+  used       Boolean @default(false)
+  created_at DateTime @default(now())
+  @@index([email])
 
-  @@index([email], map: "idx_pr_email")
-  @@index([token_hash], map: "idx_pr_token")
+  @@index([token_hash])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model payslips {
-  id                    Int      @id @default(autoincrement()) @db.UnsignedInt
-  user_id               Int      @db.UnsignedInt
-  month                 Int      @db.TinyInt
-  year                  Int      @db.SmallInt
-  gross_salary          Decimal  @default(0.00) @db.Decimal(12, 2)
-  basic_salary          Decimal  @default(0.00) @db.Decimal(12, 2)
-  hra                   Decimal  @default(0.00) @db.Decimal(12, 2)
-  special_allowance     Decimal  @default(0.00) @db.Decimal(12, 2)
-  conveyance            Decimal  @default(0.00) @db.Decimal(12, 2)
-  education_allowance   Decimal  @default(0.00) @db.Decimal(12, 2)
-  lta                   Decimal  @default(0.00) @db.Decimal(12, 2)
-  mediclaim_insurance   Decimal  @default(0.00) @db.Decimal(12, 2)
-  medical_reimbursement Decimal  @default(0.00) @db.Decimal(12, 2)
-  mobile_internet       Decimal  @default(0.00) @db.Decimal(12, 2)
-  personal_allowance    Decimal  @default(0.00) @db.Decimal(12, 2)
-  bonus                 Decimal  @default(0.00) @db.Decimal(12, 2)
-  arrears_earning       Decimal  @default(0.00) @db.Decimal(12, 2)
-  total_earnings        Decimal  @default(0.00) @db.Decimal(12, 2)
-  income_tax            Decimal  @default(0.00) @db.Decimal(12, 2)
-  professional_tax      Decimal  @default(0.00) @db.Decimal(12, 2)
-  epf_employee          Decimal  @default(0.00) @db.Decimal(12, 2)
-  esi_employee          Decimal  @default(0.00) @db.Decimal(12, 2)
-  eps_employer          Decimal  @default(0.00) @db.Decimal(12, 2)
-  edli_employer         Decimal  @default(0.00) @db.Decimal(12, 2)
-  epf_admin             Decimal  @default(0.00) @db.Decimal(12, 2)
-  esi_employer          Decimal  @default(0.00) @db.Decimal(12, 2)
-  custom_deductions     String?  @db.LongText
-  arrears_deduction     Decimal  @default(0.00) @db.Decimal(12, 2)
-  custom_additions      String?  @db.LongText
-  total_deductions      Decimal  @default(0.00) @db.Decimal(12, 2)
-  total_employer_cost   Decimal  @default(0.00) @db.Decimal(12, 2)
-  net_payable           Decimal  @default(0.00) @db.Decimal(12, 2)
-  days_payable          Decimal  @default(0.0) @db.Decimal(5, 1)
-  generated_by          Int?     @db.UnsignedInt
-  created_at            DateTime @default(now()) @db.Timestamp(0)
+  id                    Int @id @default(autoincrement()) 
+  user_id               Int
+  month                 Int
+  year                  Int
+  gross_salary          Decimal @default(0.00) 
+  basic_salary          Decimal @default(0.00) 
+  hra                   Decimal @default(0.00) 
+  special_allowance     Decimal @default(0.00) 
+  conveyance            Decimal @default(0.00) 
+  education_allowance   Decimal @default(0.00) 
+  lta                   Decimal @default(0.00) 
+  mediclaim_insurance   Decimal @default(0.00) 
+  medical_reimbursement Decimal @default(0.00) 
+  mobile_internet       Decimal @default(0.00) 
+  personal_allowance    Decimal @default(0.00) 
+  bonus                 Decimal @default(0.00) 
+  arrears_earning       Decimal @default(0.00) 
+  total_earnings        Decimal @default(0.00) 
+  income_tax            Decimal @default(0.00) 
+  professional_tax      Decimal @default(0.00) 
+  epf_employee          Decimal @default(0.00) 
+  esi_employee          Decimal @default(0.00) 
+  eps_employer          Decimal @default(0.00) 
+  edli_employer         Decimal @default(0.00) 
+  epf_admin             Decimal @default(0.00) 
+  esi_employer          Decimal @default(0.00) 
+  custom_deductions     String?
+  arrears_deduction     Decimal @default(0.00) 
+  custom_additions      String?
+  total_deductions      Decimal @default(0.00) 
+  total_employer_cost   Decimal @default(0.00) 
+  net_payable           Decimal @default(0.00) 
+  days_payable          Decimal @default(0.0) 
+  generated_by          Int?
+  created_at            DateTime @default(now())
+  @@unique([user_id, month, year])
 
-  @@unique([user_id, month, year], map: "uq_payslip_user_month")
-  @@index([month, year], map: "idx_payslip_month")
+  @@index([month, year])
 }
 
 model project_expenses {
-  id           Int                       @id @default(autoincrement()) @db.UnsignedInt
-  project_id   Int                       @db.UnsignedInt
+  id           Int @id @default(autoincrement()) 
+  project_id   Int
   category     project_expenses_category @default(Other)
-  amount       Decimal                   @default(0.00) @db.Decimal(12, 2)
-  expense_date DateTime                  @db.Date
-  description  String?                   @db.VarChar(500)
-  added_by     Int                       @db.UnsignedInt
-  created_at   DateTime                  @default(now()) @db.Timestamp(0)
+  amount       Decimal @default(0.00) 
+  expense_date DateTime
+  description  String?
+  added_by     Int
+  created_at   DateTime @default(now())
+  @@index([expense_date])
 
-  @@index([expense_date], map: "idx_exp_date")
-  @@index([project_id], map: "idx_exp_project")
+  @@index([project_id])
 }
 
 model project_invoices {
-  id             Int                     @id @default(autoincrement()) @db.UnsignedInt
-  invoice_no     String                  @unique(map: "uq_invoice_no") @db.VarChar(30)
-  project_id     Int                     @db.UnsignedInt
-  invoice_date   DateTime                @db.Date
-  due_date       DateTime?               @db.Date
-  total_hours    Decimal                 @default(0.00) @db.Decimal(10, 2)
-  utilized_hours Decimal                 @default(0.00) @db.Decimal(10, 2)
-  rate_per_hour  Decimal                 @default(0.00) @db.Decimal(10, 2)
-  subtotal       Decimal                 @default(0.00) @db.Decimal(12, 2)
-  tax_percent    Decimal                 @default(18.00) @db.Decimal(5, 2)
-  tax_amount     Decimal                 @default(0.00) @db.Decimal(12, 2)
-  total_amount   Decimal                 @default(0.00) @db.Decimal(12, 2)
-  notes          String?                 @db.Text
+  id             Int @id @default(autoincrement()) 
+  invoice_no     String @unique() 
+  project_id     Int
+  invoice_date   DateTime
+  due_date       DateTime?
+  total_hours    Decimal @default(0.00) 
+  utilized_hours Decimal @default(0.00) 
+  rate_per_hour  Decimal @default(0.00) 
+  subtotal       Decimal @default(0.00) 
+  tax_percent    Decimal @default(18.00) 
+  tax_amount     Decimal @default(0.00) 
+  total_amount   Decimal @default(0.00) 
+  notes          String?
   status         project_invoices_status @default(draft)
-  created_by     Int                     @db.UnsignedInt
-  created_at     DateTime                @default(now()) @db.Timestamp(0)
-
-  @@index([project_id], map: "idx_inv_project")
+  created_by     Int
+  created_at     DateTime @default(now())
+  @@index([project_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model projects {
-  id               Int                @id @default(autoincrement()) @db.UnsignedInt
-  project_code     String             @unique(map: "project_code") @db.VarChar(20)
-  project_name     String             @db.VarChar(150)
-  client_name      String?            @db.VarChar(150)
-  priority         projects_priority  @default(Medium)
-  manager_id       Int?               @db.UnsignedInt
-  start_date       DateTime           @db.Date
-  deadline_date    DateTime           @db.Date
-  total_hours      Decimal            @default(0.00) @db.Decimal(8, 2)
-  budget_hours     Decimal            @default(0.00) @db.Decimal(10, 2)
-  hr_rate          Decimal            @default(0.00) @db.Decimal(10, 2)
-  status           projects_status    @default(Planning)
-  description      String?            @db.Text
-  created_at       DateTime           @default(now()) @db.Timestamp(0)
-  updated_at       DateTime           @default(now()) @db.Timestamp(0)
-  users            users?             @relation(fields: [manager_id], references: [id], onUpdate: Restrict, map: "fk_proj_manager")
+  id               Int @id @default(autoincrement()) 
+  project_code     String @unique() 
+  project_name     String
+  client_name      String?
+  priority         projects_priority @default(Medium)
+  manager_id       Int?
+  start_date       DateTime
+  deadline_date    DateTime
+  total_hours      Decimal @default(0.00) 
+  budget_hours     Decimal @default(0.00) 
+  hr_rate          Decimal @default(0.00) 
+  status           projects_status @default(Planning)
+  description      String?
+  created_at       DateTime @default(now()) 
+  updated_at       DateTime @default(now()) 
+  users            users? @relation(fields: [manager_id], references: [id], onUpdate: Restrict)
   task_assignments task_assignments[]
 
-  @@index([manager_id], map: "idx_proj_manager")
+
+  @@index([manager_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model salary_structures {
-  id                    Int                          @id @default(autoincrement()) @db.UnsignedInt
-  employee_id           Int                          @db.UnsignedInt
-  user_id               Int                          @unique(map: "uq_salary_user") @db.UnsignedInt
-  gross_salary          Decimal                      @default(0.00) @db.Decimal(12, 2)
-  basic_salary          Decimal                      @default(0.00) @db.Decimal(12, 2)
-  hra                   Decimal                      @default(0.00) @db.Decimal(12, 2)
-  special_allowance     Decimal                      @default(0.00) @db.Decimal(12, 2)
-  conveyance            Decimal                      @default(0.00) @db.Decimal(12, 2)
-  education_allowance   Decimal                      @default(0.00) @db.Decimal(12, 2)
-  lta                   Decimal                      @default(0.00) @db.Decimal(12, 2)
-  mediclaim_insurance   Decimal                      @default(0.00) @db.Decimal(12, 2)
-  medical_reimbursement Decimal                      @default(0.00) @db.Decimal(12, 2)
-  mobile_internet       Decimal                      @default(0.00) @db.Decimal(12, 2)
-  personal_allowance    Decimal                      @default(0.00) @db.Decimal(12, 2)
-  bonus                 Decimal                      @default(0.00) @db.Decimal(12, 2)
-  income_tax_annual     Decimal                      @default(0.00) @db.Decimal(12, 2)
-  professional_tax      Decimal                      @default(2500.00) @db.Decimal(12, 2)
-  epf_employee_rate     Decimal                      @default(3.67) @db.Decimal(5, 2)
-  eps_employer_rate     Decimal                      @default(8.33) @db.Decimal(5, 2)
-  edli_employer_rate    Decimal                      @default(0.50) @db.Decimal(5, 2)
-  epf_admin_rate        Decimal                      @default(0.50) @db.Decimal(5, 2)
-  esi_employee_rate     Decimal                      @default(0.75) @db.Decimal(5, 2)
-  esi_employer_rate     Decimal                      @default(3.25) @db.Decimal(5, 2)
+  id                    Int @id @default(autoincrement()) 
+  employee_id           Int
+  user_id               Int @unique() 
+  gross_salary          Decimal @default(0.00) 
+  basic_salary          Decimal @default(0.00) 
+  hra                   Decimal @default(0.00) 
+  special_allowance     Decimal @default(0.00) 
+  conveyance            Decimal @default(0.00) 
+  education_allowance   Decimal @default(0.00) 
+  lta                   Decimal @default(0.00) 
+  mediclaim_insurance   Decimal @default(0.00) 
+  medical_reimbursement Decimal @default(0.00) 
+  mobile_internet       Decimal @default(0.00) 
+  personal_allowance    Decimal @default(0.00) 
+  bonus                 Decimal @default(0.00) 
+  income_tax_annual     Decimal @default(0.00) 
+  professional_tax      Decimal @default(2500.00) 
+  epf_employee_rate     Decimal @default(3.67) 
+  eps_employer_rate     Decimal @default(8.33) 
+  edli_employer_rate    Decimal @default(0.50) 
+  epf_admin_rate        Decimal @default(0.50) 
+  esi_employee_rate     Decimal @default(0.75) 
+  esi_employer_rate     Decimal @default(3.25) 
   tax_regime            salary_structures_tax_regime @default(new)
-  custom_deductions     String?                      @db.LongText
-  custom_additions      String?                      @db.LongText
-  created_at            DateTime                     @default(now()) @db.Timestamp(0)
-  updated_at            DateTime                     @default(now()) @db.Timestamp(0)
-
-  @@index([employee_id], map: "idx_salary_emp")
+  custom_deductions     String?
+  custom_additions      String?
+  created_at            DateTime @default(now()) 
+  updated_at            DateTime @default(now())
+  @@index([employee_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model task_assignments {
-  id                                        Int                     @id @default(autoincrement()) @db.UnsignedInt
-  project_id                                Int                     @db.UnsignedInt
-  assigned_to                               Int                     @db.UnsignedInt
-  assigned_by                               Int                     @db.UnsignedInt
-  subtask                                   String                  @db.VarChar(100)
-  from_date                                 DateTime                @db.Date
-  to_date                                   DateTime                @db.Date
-  hours                                     Decimal                 @db.Decimal(5, 1)
+  id                                        Int @id @default(autoincrement()) 
+  project_id                                Int
+  assigned_to                               Int
+  assigned_by                               Int
+  subtask                                   String
+  from_date                                 DateTime
+  to_date                                   DateTime
+  hours                                     Decimal
   status                                    task_assignments_status @default(Pending)
-  notes                                     String?                 @db.Text
-  created_at                                DateTime                @default(now()) @db.Timestamp(0)
-  updated_at                                DateTime                @default(now()) @db.Timestamp(0)
-  users_task_assignments_assigned_toTousers users                   @relation("task_assignments_assigned_toTousers", fields: [assigned_to], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_ta_assignee")
-  users_task_assignments_assigned_byTousers users                   @relation("task_assignments_assigned_byTousers", fields: [assigned_by], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_ta_assigner")
-  projects                                  projects                @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_ta_project")
+  notes                                     String?
+  created_at                                DateTime @default(now()) 
+  updated_at                                DateTime @default(now()) 
+  users_task_assignments_assigned_toTousers users @relation("task_assignments_assigned_toTousers", fields: [assigned_to], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users_task_assignments_assigned_byTousers users @relation("task_assignments_assigned_byTousers", fields: [assigned_by], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  projects                                  projects @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@index([assigned_by], map: "fk_ta_assigner")
-  @@index([assigned_to], map: "idx_ta_assigned")
-  @@index([project_id], map: "idx_ta_project")
+
+  @@index([assigned_by])
+
+  @@index([assigned_to])
+
+  @@index([project_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model task_progress_logs {
-  id            Int                         @id @default(autoincrement()) @db.UnsignedInt
-  task_id       Int                         @db.UnsignedInt
-  user_id       Int                         @db.UnsignedInt
-  attendance_id Int                         @db.UnsignedInt
-  log_date      DateTime                    @db.Date
-  hours_worked  Decimal                     @default(0.00) @db.Decimal(5, 2)
+  id            Int @id @default(autoincrement()) 
+  task_id       Int
+  user_id       Int
+  attendance_id Int
+  log_date      DateTime
+  hours_worked  Decimal @default(0.00) 
   progress      task_progress_logs_progress @default(In_Progress)
-  created_at    DateTime                    @default(now()) @db.Timestamp(0)
+  created_at    DateTime @default(now())
+  @@index([attendance_id])
 
-  @@index([attendance_id], map: "idx_attendance")
-  @@index([log_date], map: "idx_log_date")
-  @@index([task_id, user_id], map: "idx_task_user")
+  @@index([log_date])
+
+  @@index([task_id, user_id])
 }
 
 model user_locations {
-  id                   Int                  @id @default(autoincrement()) @db.UnsignedInt
-  user_id              Int                  @db.UnsignedInt
-  location_id          Int                  @db.UnsignedInt
-  assigned_at          DateTime             @default(now()) @db.Timestamp(0)
-  attendance_locations attendance_locations @relation(fields: [location_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_ul_loc")
-  users                users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_ul_user")
+  id                   Int @id @default(autoincrement()) 
+  user_id              Int
+  location_id          Int
+  assigned_at          DateTime @default(now()) 
+  attendance_locations attendance_locations @relation(fields: [location_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users                users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([user_id, location_id], map: "uq_user_loc")
-  @@index([location_id], map: "fk_ul_loc")
+
+  @@unique([user_id, location_id])
+
+  @@index([location_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_mfa_backup_codes {
-  id         Int       @id @default(autoincrement()) @db.UnsignedInt
-  user_id    Int       @db.UnsignedInt
-  code_hash  String    @db.VarChar(255)
-  used_at    DateTime? @db.DateTime(0)
-  created_at DateTime  @default(now()) @db.Timestamp(0)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_mfa_backup_user")
+  id         Int @id @default(autoincrement()) 
+  user_id    Int
+  code_hash  String
+  used_at    DateTime? 
+  created_at DateTime @default(now()) 
+  users      users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@index([user_id], map: "idx_mfa_backup_user")
+
+  @@index([user_id])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
-  id                                                   Int                          @id @default(autoincrement()) @db.UnsignedInt
-  name                                                 String                       @db.VarChar(120)
-  email                                                String                       @unique(map: "email") @db.VarChar(180)
-  password                                             String                       @db.VarChar(255)
-  mfa_secret                                           String?                      @db.VarChar(64)
-  mfa_enabled                                          Boolean                      @default(false)
-  mfa_enrolled_at                                      DateTime?                    @db.DateTime(0)
-  password_changed_at                                  DateTime?                    @db.DateTime(0)
-  role                                                 users_role                   @default(employee)
-  status                                               users_status                 @default(active)
-  created_at                                           DateTime                     @default(now()) @db.Timestamp(0)
-  updated_at                                           DateTime                     @default(now()) @db.Timestamp(0)
+  id                                                   Int @id @default(autoincrement()) 
+  name                                                 String
+  email                                                String @unique() 
+  password                                             String
+  mfa_secret                                           String?
+  mfa_enabled                                          Boolean @default(false)
+  mfa_enrolled_at                                      DateTime?
+  password_changed_at                                  DateTime?
+  role                                                 users_role @default(employee)
+  status                                               users_status @default(active)
+  created_at                                           DateTime @default(now()) 
+  updated_at                                           DateTime @default(now()) 
   attendance_logs                                      attendance_logs[]
   attendance_regularizations                           attendance_regularizations[]
   leave_applications                                   leave_applications[]
   leave_balances                                       leave_balances[]
   projects                                             projects[]
-  task_assignments_task_assignments_assigned_toTousers task_assignments[]           @relation("task_assignments_assigned_toTousers")
-  task_assignments_task_assignments_assigned_byTousers task_assignments[]           @relation("task_assignments_assigned_byTousers")
+  task_assignments_task_assignments_assigned_toTousers task_assignments[] @relation("task_assignments_assigned_toTousers")
+  task_assignments_task_assignments_assigned_byTousers task_assignments[] @relation("task_assignments_assigned_byTousers")
   user_locations                                       user_locations[]
   user_mfa_backup_codes                                user_mfa_backup_codes[]
 
-  @@index([role], map: "idx_role")
+
+  @@index([role])
 }
 
 enum project_expenses_category {
@@ -568,7 +588,7 @@ enum task_progress_logs_progress {
   Pending
   In_Progress @map("In Progress")
   Completed
-  On_Hold     @map("On Hold")
+  On_Hold @map("On Hold")
 }
 
 enum attendance_logs_status {
@@ -603,7 +623,7 @@ enum task_assignments_status {
   Pending
   In_Progress @map("In Progress")
   Completed
-  On_Hold     @map("On Hold")
+  On_Hold @map("On Hold")
 }
 
 enum users_role {
@@ -625,7 +645,7 @@ enum employees_employee_type {
 enum projects_status {
   Planning
   Active
-  On_Hold   @map("On Hold")
+  On_Hold @map("On Hold")
   Completed
   Cancelled
 }
@@ -650,4 +670,17 @@ enum employees_status {
   Active
   Inactive
   Terminated
+}
+
+model employee_documents {
+  id            Int @id @default(autoincrement())
+  employee_id   Int
+  doc_type      String
+  doc_key       String
+  file_path     String
+  original_name String
+  mime_type     String
+  file_size     Int
+  created_at    DateTime @default(now())
+  @@index([employee_id])
 }
